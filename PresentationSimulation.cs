@@ -17,7 +17,7 @@ public class PresentationSimulation
     private int _intervalTimeCook;
 
     private Panel _customersPanel;
-    private Panel _orderTakersPanel;
+    private OrderTakerUI _orderTakerUI;
     private Panel _cooksPanel;
     private Panel _serversPanel;
     private Panel _waitingCustomersPanel;
@@ -110,14 +110,14 @@ public class PresentationSimulation
         }
     }
 
-    public Panel OrderTakersPanel
+    public OrderTakerUI OrderTakerUI
     {
-        get { return _orderTakersPanel; }
+        get { return _orderTakerUI; }
         set
         {
             if (value != null)
             {
-                _orderTakersPanel = value;
+                _orderTakerUI = value;
             }
         }
     }
@@ -160,10 +160,16 @@ public class PresentationSimulation
 
     public void Main()
     {
+        OrderTakerUI = new OrderTakerUI(CreaterPanel(new Size(300, 200), new Point(50, 50), _window));
+        OrderTakerUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(0, 0), "Order taker", OrderTakerUI.Panel);
+
+        CustomersPanel = CreaterPanel(new Size(300, 700), new Point(50, 400), _window);
+
         System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
         timer.Interval = IntervalTimeArriveCustomers * 1000;
         timer.Tick += TimerTick;
         timer.Start();
+
     }
 
     private void TimerTick(object sender, EventArgs e)
@@ -172,7 +178,7 @@ public class PresentationSimulation
         Customer customer = new Customer(randomName);
         _customersList.Add(customer);
 
-        Label label = CreaterLabel(new Size(CustomersPanel.Width - 10, 70), new Point(5, 5 + _customersList.Count * 75), )
+        Label label = CreaterLabel(new Size(CustomersPanel.Width - 10, 70), new Point(5, 5 + (_customersList.Count -1) * 75), customer.Name, CustomersPanel);
     }
 
     private Label CreaterLabel(Size size, Point point, string text, Control control)
@@ -181,9 +187,33 @@ public class PresentationSimulation
         label.Text = text;
         label.Location = point;
         label.Size = size;
+        label.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+        control.Controls.Add(label);
+        return label;
+    }
+
+    private Label CreaterLabelTitle(Size size, Point point, string text, Control control)
+    {
+        Label label = new Label();
+        label.Text = text;
+        label.Location = point;
+        label.Size = size;
+        label.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+        label.TextAlign = ContentAlignment.MiddleCenter;
         label.BackColor = Color.Aqua;
         control.Controls.Add(label);
         return label;
+    }
+
+    private Panel CreaterPanel(Size size, Point point, Control control)
+    {
+        Panel panel = new Panel();
+        panel.Size = size;
+        panel.Location = point;
+        panel.AutoScroll = true;
+        panel.BackColor = Color.Yellow;
+        control.Controls.Add(panel);
+        return panel;
     }
 
     private void UpdateUIElement()

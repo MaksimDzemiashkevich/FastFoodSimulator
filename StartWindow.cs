@@ -163,12 +163,7 @@ public class StartWindow
 
     private void PressButton(object sender, EventArgs e)
     {
-        CountCooksTextBox.Visible = false;
-        CountServersTextBox.Visible = false;
-        CountOrderTakersTextBox.Visible = false;
-        IntervalTimeArriveCustomersTextBox.Visible = false;
-        IntervalTimeCookTextBox.Visible = false;
-        StartButton.Visible = false;
+        Panel.Visible = false;
 
         PresentationSimulation presentationSimulation = new PresentationSimulation(int.Parse(CountCooksTextBox.Text), int.Parse(CountServersTextBox.Text),
             int.Parse(CountOrderTakersTextBox.Text), int.Parse(IntervalTimeArriveCustomersTextBox.Text), int.Parse(IntervalTimeCookTextBox.Text), _window);
