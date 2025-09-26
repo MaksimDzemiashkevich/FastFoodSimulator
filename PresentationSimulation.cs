@@ -16,17 +16,20 @@ public class PresentationSimulation
     private int _intervalTimeArriveCustomers;
     private int _intervalTimeCook;
 
-    private Panel _customersPanel;
+    private CustomerListUI _customerListUI;
     private OrderTakerUI _orderTakerUI;
     private Panel _cooksPanel;
     private Panel _serversPanel;
     private Panel _waitingCustomersPanel;
 
-    private List<Customer> _customersList = new List<Customer>();
-    private Random _random = new Random();
-    private string[] _names = Enum.GetNames(typeof(NamesCustomers));
+    private int _countSeconds = 0;
+    private int _intervalTimeArriveCustomersLocal = 0;
+    private int _timeForNextMakingOrder = 0;
 
-    private List<Label> _customersLabels = new List<Label>();
+    private int _timeforMakingOrder = 4;
+    private int _rest = 1;
+
+    int ff = 0;
 
     public PresentationSimulation(int countCooks, int countServers, int countOrderTakers, int intervalTimeArriveCustomers, int intervalTimeCook, Control window)
     {
@@ -36,6 +39,8 @@ public class PresentationSimulation
         IntervalTimeArriveCustomers = intervalTimeArriveCustomers;
         IntervalTimeCook = intervalTimeCook;
         _window = window;
+
+        _intervalTimeArriveCustomersLocal = intervalTimeArriveCustomers;
     }
 
     public int CountCooks
@@ -98,18 +103,6 @@ public class PresentationSimulation
         }
     }
 
-    public Panel CustomersPanel
-    {
-        get { return _customersPanel; }
-        set
-        {
-            if (value != null)
-            {
-                _customersPanel = value;
-            }
-        }
-    }
-
     public OrderTakerUI OrderTakerUI
     {
         get { return _orderTakerUI; }
@@ -160,25 +153,43 @@ public class PresentationSimulation
 
     public void Main()
     {
-        OrderTakerUI = new OrderTakerUI(CreaterPanel(new Size(300, 200), new Point(50, 50), _window));
-        OrderTakerUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(0, 0), "Order taker", OrderTakerUI.Panel);
+        OrderTakerUI = new OrderTakerUI(CreaterPanel(new Size(300, 120), new Point(50, 130), _window));
+        OrderTakerUI.LabelTitle = CreaterLabelTitle(new Size(300, 80), new Point(50, 50), "Order taker", _window);
 
-        CustomersPanel = CreaterPanel(new Size(300, 700), new Point(50, 400), _window);
+        _customerListUI = new CustomerListUI(CreaterPanel(new Size(300, 620), new Point(50, 480), _window));
+        _customerListUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(50, 400), "Customers", _window);
 
         System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-        timer.Interval = IntervalTimeArriveCustomers * 1000;
+        timer.Interval = 1000;
         timer.Tick += TimerTick;
         timer.Start();
-
     }
 
     private void TimerTick(object sender, EventArgs e)
     {
-        string randomName = _names[_random.Next(_names.Length)];
-        Customer customer = new Customer(randomName);
-        _customersList.Add(customer);
+        _countSeconds++;
+        if (_timeForNextMakingOrder <= _countSeconds && _orderTakerUI.IsExistedLabel())
+        {
+            _orderTakerUI.ClearPanel();
+        }
 
-        Label label = CreaterLabel(new Size(CustomersPanel.Width - 10, 70), new Point(5, 5 + (_customersList.Count -1) * 75), customer.Name, CustomersPanel);
+        if (_countSeconds >= _intervalTimeArriveCustomersLocal)
+        {
+            _customerListUI.AddNewCustomer();
+            _intervalTimeArriveCustomersLocal += _intervalTimeArriveCustomers;
+            ff++;
+            if (ff == 2)
+            {
+                ff++;
+            }
+        }
+
+        if (_customerListUI.CustomersList.Count > 0 && _countSeconds >= _timeForNextMakingOrder + _rest)
+        {
+            _orderTakerUI.MakingOrder(_customerListUI.CustomersList.First());
+            _customerListUI.RemoveCustomer(_customerListUI.CustomersList.First());
+            _timeForNextMakingOrder = _countSeconds + _timeforMakingOrder;
+        }
     }
 
     private Label CreaterLabel(Size size, Point point, string text, Control control)
@@ -214,10 +225,5 @@ public class PresentationSimulation
         panel.BackColor = Color.Yellow;
         control.Controls.Add(panel);
         return panel;
-    }
-
-    private void UpdateUIElement()
-    {
-
     }
 }

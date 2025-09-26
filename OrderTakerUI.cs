@@ -6,23 +6,11 @@ using System.Threading.Tasks;
 
 namespace Lab1;
 
-public class OrderTakerUI
+public class OrderTakerUI : OrderTaker
 {
-    private OrderTaker _orderTaker;
     private Panel _panel;
+    private Label _labelTitle;
     private Label _label;
-
-    public OrderTaker OrderTaker
-    {
-        get { return _orderTaker; }
-        set
-        {
-            if (value != null)
-            {
-                _orderTaker = value;
-            }
-        }
-    }
 
     public Panel Panel
     {
@@ -36,30 +24,60 @@ public class OrderTakerUI
         }
     }
 
-    public Label Label
+    public Label LabelTitle
     {
-        get { return _label; }
+        get { return _labelTitle; }
         set
         {
             if (value != null)
             {
-                _label = value;
+                _labelTitle = value;
             }
         }
     }
 
-    public OrderTakerUI(OrderTaker orderTaker)
-    {
-        _orderTaker = orderTaker;
-    }
-
-    public OrderTakerUI()
+    public OrderTakerUI() : base()
     {
         
     }
 
-    public OrderTakerUI(Panel panel)
+    public OrderTakerUI(Panel panel) : base()
     {
         _panel = panel;
+    }
+
+    public void MakingOrder(Customer customer)
+    {
+        Customer = customer;
+        _label = CreaterLabel(new Size(_panel.Size.Width, _panel.Size.Height), new Point(0, 0), customer.ToString(), _panel);
+    }
+
+    private Label CreaterLabel(Size size, Point point, string text, Control control)
+    {
+        Label label = new Label();
+        label.Text = text;
+        label.Location = point;
+        label.Size = size;
+        label.TextAlign = ContentAlignment.MiddleLeft;
+        control.Controls.Add(label);
+        return label;
+    }
+
+    public void ClearPanel()
+    {
+        _panel.Controls.Remove(_label);
+        _label.Dispose();
+    }
+
+    public bool IsExistedLabel()
+    {
+        if (_label == null)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Lab1;
 public class OrderTaker
 {
-    private Customer _customer;
+    protected Customer _customer;
 
     public Customer Customer
     {
@@ -25,4 +25,6 @@ public class OrderTaker
     {
         Customer = customer;
     }
+
+    public OrderTaker() { }
 }
