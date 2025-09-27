@@ -67,6 +67,7 @@ public class OrderTakerUI : OrderTaker
     {
         _panel.Controls.Remove(_label);
         _label.Dispose();
+        _label = null;
     }
 
     public bool IsExistedLabel()

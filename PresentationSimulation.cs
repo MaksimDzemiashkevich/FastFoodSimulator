@@ -18,18 +18,19 @@ public class PresentationSimulation
 
     private CustomerListUI _customerListUI;
     private OrderTakerUI _orderTakerUI;
-    private Panel _cooksPanel;
+    private CookUI _cookUI;
     private Panel _serversPanel;
-    private Panel _waitingCustomersPanel;
+    private WaitingCustomersUI _waitingCustomersUI;
 
     private int _countSeconds = 0;
     private int _intervalTimeArriveCustomersLocal = 0;
     private int _timeForNextMakingOrder = 0;
+    private int _timeForNextCooking = 0;
 
-    private int _timeforMakingOrder = 4;
+    private int _timeforMakingOrder = 2;
     private int _rest = 1;
 
-    int ff = 0;
+    private Customer customer;
 
     public PresentationSimulation(int countCooks, int countServers, int countOrderTakers, int intervalTimeArriveCustomers, int intervalTimeCook, Control window)
     {
@@ -115,14 +116,14 @@ public class PresentationSimulation
         }
     }
 
-    public Panel CooksPanel
+    public CookUI CookUI
     {
-        get { return _cooksPanel; }
+        get { return _cookUI; }
         set
         {
             if (value != null)
             {
-                _cooksPanel = value;
+                _cookUI = value;
             }
         }
     }
@@ -139,18 +140,6 @@ public class PresentationSimulation
         }
     }
 
-    public Panel WaitingCustomersPanel
-    {
-        get { return _waitingCustomersPanel; }
-        set
-        {
-            if (value != null)
-            {
-                _waitingCustomersPanel = value;
-            }
-        }
-    }
-
     public void Main()
     {
         OrderTakerUI = new OrderTakerUI(CreaterPanel(new Size(300, 120), new Point(50, 130), _window));
@@ -158,6 +147,13 @@ public class PresentationSimulation
 
         _customerListUI = new CustomerListUI(CreaterPanel(new Size(300, 620), new Point(50, 480), _window));
         _customerListUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(50, 400), "Customers", _window);
+
+        _waitingCustomersUI = new WaitingCustomersUI(CreaterPanel(new Size(300, 620), new Point(800, 480), _window));
+        _waitingCustomersUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(800, 400), "Waiting customers", _window);
+
+        _cookUI = new CookUI(CreaterPanel(new Size(300, 120), new Point(400, 130), _window), CreaterPanel(new Size(300, 120), 
+            new Point(400, 330), _window), CreaterLabelTitle(new Size(300, 80), new Point(400, 50), "Cook", _window), 
+            CreaterLabelTitle(new Size(300, 80), new Point(400, 250), "Queue tickets", _window));
 
         System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
         timer.Interval = 1000;
@@ -168,28 +164,39 @@ public class PresentationSimulation
     private void TimerTick(object sender, EventArgs e)
     {
         _countSeconds++;
-        if (_timeForNextMakingOrder <= _countSeconds && _orderTakerUI.IsExistedLabel())
-        {
-            _orderTakerUI.ClearPanel();
-        }
 
+        //Arrive new customer
         if (_countSeconds >= _intervalTimeArriveCustomersLocal)
         {
             _customerListUI.AddNewCustomer();
             _intervalTimeArriveCustomersLocal += _intervalTimeArriveCustomers;
-            ff++;
-            if (ff == 2)
-            {
-                ff++;
-            }
         }
-
+        //make order move to cook queue, customer move from order taker to waiting queue and order taker area clear
+        if (_timeForNextMakingOrder <= _countSeconds && _orderTakerUI.IsExistedLabel())
+        {
+            _cookUI.AddCustomerInQueue(_orderTakerUI.Customer);
+            _waitingCustomersUI.AddNewCustomer(_orderTakerUI.Customer);
+            _orderTakerUI.ClearPanel();
+        }
+        //Order taker make new order and first customer leave queue
         if (_customerListUI.CustomersList.Count > 0 && _countSeconds >= _timeForNextMakingOrder + _rest)
         {
             _orderTakerUI.MakingOrder(_customerListUI.CustomersList.First());
             _customerListUI.RemoveCustomer(_customerListUI.CustomersList.First());
             _timeForNextMakingOrder = _countSeconds + _timeforMakingOrder;
         }
+        //
+        if (_timeForNextCooking <= _countSeconds && _cookUI.IsExistedLabel())
+        {
+            _cookUI.ClearPanel();
+        }
+        //Take ticket from queue and cook
+        if (_timeForNextCooking + _rest <= _countSeconds && _cookUI.IsTicketsInOrder())
+        {
+            _cookUI.Cooking();
+            _timeForNextCooking = _countSeconds + _intervalTimeCook;
+        }
+
     }
 
     private Label CreaterLabel(Size size, Point point, string text, Control control)
