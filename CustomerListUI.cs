@@ -64,7 +64,7 @@ public class CustomerListUI
         _customersList.Add(customer);
 
         Label label = CreaterLabel(new Size(CustomersPanel.Width - 10, 70),
-            new Point(5, 5 + (CustomersList.Count - 1) * 75 + CustomersPanel.AutoScrollPosition.Y), customer.Name, CustomersPanel);
+            new Point(5, (CustomersList.Count - 1) * 70 + CustomersPanel.AutoScrollPosition.Y), customer.Name, CustomersPanel);
         _customersLabels.Add(label);
     }
 

@@ -19,15 +19,17 @@ public class PresentationSimulation
     private CustomerListUI _customerListUI;
     private OrderTakerUI _orderTakerUI;
     private CookUI _cookUI;
-    private Panel _serversPanel;
+    private ServerUI _serverUI;
     private WaitingCustomersUI _waitingCustomersUI;
 
     private int _countSeconds = 0;
     private int _intervalTimeArriveCustomersLocal = 0;
     private int _timeForNextMakingOrder = 0;
     private int _timeForNextCooking = 0;
+    private int _timeNextIssuingOrder = 0;
 
     private int _timeforMakingOrder = 2;
+    private int _timeForIssuingOrder = 4;
     private int _rest = 1;
 
     private Customer customer;
@@ -128,14 +130,14 @@ public class PresentationSimulation
         }
     }
 
-    public Panel ServersPanel
+    public ServerUI ServerUI
     {
-        get { return _serversPanel; }
+        get { return _serverUI; }
         set
         {
             if (value != null)
             {
-                _serversPanel = value;
+                _serverUI = value;
             }
         }
     }
@@ -145,15 +147,19 @@ public class PresentationSimulation
         OrderTakerUI = new OrderTakerUI(CreaterPanel(new Size(300, 120), new Point(50, 130), _window));
         OrderTakerUI.LabelTitle = CreaterLabelTitle(new Size(300, 80), new Point(50, 50), "Order taker", _window);
 
-        _customerListUI = new CustomerListUI(CreaterPanel(new Size(300, 620), new Point(50, 480), _window));
-        _customerListUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(50, 400), "Customers", _window);
+        _customerListUI = new CustomerListUI(CreaterPanel(new Size(300, 620), new Point(50, 580), _window));
+        _customerListUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(50, 500), "Customers", _window);
 
-        _waitingCustomersUI = new WaitingCustomersUI(CreaterPanel(new Size(300, 620), new Point(800, 480), _window));
-        _waitingCustomersUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(800, 400), "Waiting customers", _window);
+        _waitingCustomersUI = new WaitingCustomersUI(CreaterPanel(new Size(300, 620), new Point(800, 580), _window));
+        _waitingCustomersUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(800, 500), "Waiting customers", _window);
 
         _cookUI = new CookUI(CreaterPanel(new Size(300, 120), new Point(400, 130), _window), CreaterPanel(new Size(300, 120), 
             new Point(400, 330), _window), CreaterLabelTitle(new Size(300, 80), new Point(400, 50), "Cook", _window), 
             CreaterLabelTitle(new Size(300, 80), new Point(400, 250), "Queue tickets", _window));
+
+        _serverUI = new ServerUI(CreaterPanel(new Size(300, 120), new Point(800, 130), _window), CreaterPanel(new Size(300, 120),
+            new Point(800, 330), _window), CreaterLabelTitle(new Size(300, 80), new Point(800, 50), "Server", _window),
+            CreaterLabelTitle(new Size(300, 80), new Point(800, 250), "Ready tickets", _window));
 
         System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
         timer.Interval = 1000;
@@ -188,6 +194,7 @@ public class PresentationSimulation
         //
         if (_timeForNextCooking <= _countSeconds && _cookUI.IsExistedLabel())
         {
+            _serverUI.AddReadyTicket(_cookUI.Customer);
             _cookUI.ClearPanel();
         }
         //Take ticket from queue and cook
@@ -196,7 +203,13 @@ public class PresentationSimulation
             _cookUI.Cooking();
             _timeForNextCooking = _countSeconds + _intervalTimeCook;
         }
-
+        //Server waiting customers
+        if (_timeNextIssuingOrder < _countSeconds && _serverUI.IsAnyReadyTicket() && _waitingCustomersUI.IsAnyWaitingCustomer())
+        {
+            _serverUI.ClearPanel();
+            ServerWaitingCustomer();
+            _timeNextIssuingOrder = _countSeconds + _timeForIssuingOrder;
+        }
     }
 
     private Label CreaterLabel(Size size, Point point, string text, Control control)
@@ -232,5 +245,15 @@ public class PresentationSimulation
         panel.BackColor = Color.Yellow;
         control.Controls.Add(panel);
         return panel;
+    }
+
+    private void ServerWaitingCustomer()
+    {
+        Customer customer = _waitingCustomersUI.FindCustomer(_serverUI.GetFirstCustomer().Id);
+        if (customer.Name != "")
+        {
+            _serverUI.IssuingOrder(customer);
+            _waitingCustomersUI.RemoveWaitingCustomer(customer);
+        }
     }
 }
