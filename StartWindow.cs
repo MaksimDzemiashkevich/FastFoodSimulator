@@ -163,10 +163,43 @@ public class StartWindow
 
     private void PressButton(object sender, EventArgs e)
     {
-        Panel.Visible = false;
-
-        PresentationSimulation presentationSimulation = new PresentationSimulation(int.Parse(CountCooksTextBox.Text), int.Parse(CountServersTextBox.Text),
+        string check = Validation();
+        if (check == "")
+        {
+            Panel.Visible = false;
+            PresentationSimulation presentationSimulation = new PresentationSimulation(int.Parse(CountCooksTextBox.Text), int.Parse(CountServersTextBox.Text),
             int.Parse(CountOrderTakersTextBox.Text), int.Parse(IntervalTimeArriveCustomersTextBox.Text), int.Parse(IntervalTimeCookTextBox.Text), _window);
-        presentationSimulation.Main();
+            presentationSimulation.Main();
+        }
+        else
+        {
+            MessageBox.Show(check);
+        }
+    }
+
+    private string Validation()
+    {
+        StringBuilder checkConditions = new StringBuilder();
+        if (IntervalTimeArriveCustomersTextBox.Text == "" || int.Parse(IntervalTimeArriveCustomersTextBox.Text) <= 0 )
+        {
+            checkConditions.AppendLine("Interval time arrive customers have to more 0");
+        }
+        if (IntervalTimeCookTextBox.Text == "" || int.Parse(IntervalTimeCookTextBox.Text) <= 0)
+        {
+            checkConditions.AppendLine("Interval time cook have to more 0");
+        }
+        if (CountCooksTextBox.Text == "" || int.Parse(CountCooksTextBox.Text) <= 0)
+        {
+            checkConditions.AppendLine("Count cooks have to more 0");
+        }
+        if (CountServersTextBox.Text == "" || int.Parse(CountServersTextBox.Text) <= 0)
+        {
+            checkConditions.AppendLine("Count servers have to more 0");
+        }
+        if (CountOrderTakersTextBox.Text == "" || int.Parse(CountOrderTakersTextBox.Text) <= 0)
+        {
+            checkConditions.AppendLine("Count order takers have to more 0");
+        }
+        return checkConditions.ToString();
     }
 }

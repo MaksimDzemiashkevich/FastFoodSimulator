@@ -21,6 +21,9 @@ public class PresentationSimulation
     private CookUI _cookUI;
     private ServerUI _serverUI;
     private WaitingCustomersUI _waitingCustomersUI;
+    private Button _stopButton;
+    private System.Windows.Forms.Timer _timer;
+    private bool _isRunning = true;
 
     private int _countSeconds = 0;
     private int _intervalTimeArriveCustomersLocal = 0;
@@ -161,10 +164,13 @@ public class PresentationSimulation
             new Point(800, 330), _window), CreaterLabelTitle(new Size(300, 80), new Point(800, 50), "Server", _window),
             CreaterLabelTitle(new Size(300, 80), new Point(800, 250), "Ready tickets", _window));
 
-        System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-        timer.Interval = 1000;
-        timer.Tick += TimerTick;
-        timer.Start();
+        _stopButton = CreaterButton(new Size(200, 70), new Point(450, 700), "Stop", _window);
+        _stopButton.Click += StopAndContinue;
+
+        _timer = new System.Windows.Forms.Timer();
+        _timer.Interval = 1000;
+        _timer.Tick += TimerTick;
+        _timer.Start();
     }
 
     private void TimerTick(object sender, EventArgs e)
@@ -254,6 +260,32 @@ public class PresentationSimulation
         {
             _serverUI.IssuingOrder(customer);
             _waitingCustomersUI.RemoveWaitingCustomer(customer);
+        }
+    }
+
+    private Button CreaterButton(Size size, Point point, string text, Control control)
+    {
+        Button button = new Button();
+        button.Size = size;
+        button.Text = text;
+        button.Location = point;
+        control.Controls.Add(button);
+        return button;
+    }
+
+    private void StopAndContinue(object sender, EventArgs e)
+    {
+        if (_isRunning)
+        {
+            _timer.Stop();
+            _stopButton.Text = "Continue";
+            _isRunning = !_isRunning;
+        }
+        else
+        {
+            _timer.Start();
+            _stopButton.Text = "Stop";
+            _isRunning = !_isRunning;
         }
     }
 }
