@@ -162,7 +162,7 @@ public class PresentationSimulation
 
         _serverUI = new ServerUI(CreaterPanel(new Size(300, 120), new Point(800, 130), _window), CreaterPanel(new Size(300, 120),
             new Point(800, 330), _window), CreaterLabelTitle(new Size(300, 80), new Point(800, 50), "Server", _window),
-            CreaterLabelTitle(new Size(300, 80), new Point(800, 250), "Ready tickets", _window));
+            CreaterLabelTitle(new Size(300, 80), new Point(800, 250), "Ready tickets", _window), CountServers);
 
         _stopButton = CreaterButton(new Size(200, 70), new Point(450, 700), "Stop", _window);
         _stopButton.Click += StopAndContinue;
@@ -210,11 +210,23 @@ public class PresentationSimulation
             _timeForNextCooking = _countSeconds + _intervalTimeCook;
         }
         //Server waiting customers
-        if (_timeNextIssuingOrder < _countSeconds && _serverUI.IsAnyReadyTicket() && _waitingCustomersUI.IsAnyWaitingCustomer())
+        if (_serverUI.IsAnyReadyTicket() && _waitingCustomersUI.IsAnyWaitingCustomer())
         {
-            _serverUI.ClearPanel();
-            ServerWaitingCustomer();
-            _timeNextIssuingOrder = _countSeconds + _timeForIssuingOrder;
+            for (int i = 0; i < _countServers; i++)
+            {
+                if (_serverUI.TimeNextIssuingOrder[i] < _countSeconds && _serverUI.IsAnyReadyTicket())
+                {
+                    _serverUI.ClearPanel(i);
+                    ServerWaitingCustomer(i);
+                    _serverUI.TimeNextIssuingOrder[i] = _countSeconds + _timeForIssuingOrder;
+                }
+            }
+            if (_timeNextIssuingOrder < _countSeconds && _serverUI.IsAnyReadyTicket() && _waitingCustomersUI.IsAnyWaitingCustomer())
+            {
+
+
+
+            }
         }
     }
 
@@ -253,12 +265,13 @@ public class PresentationSimulation
         return panel;
     }
 
-    private void ServerWaitingCustomer()
+    //Issuing order to the customer and remove from queue waiting customers
+    private void ServerWaitingCustomer(int i)
     {
         Customer customer = _waitingCustomersUI.FindCustomer(_serverUI.GetFirstCustomer().Id);
         if (customer.Name != "")
         {
-            _serverUI.IssuingOrder(customer);
+            _serverUI.IssuingOrder(customer, i);
             _waitingCustomersUI.RemoveWaitingCustomer(customer);
         }
     }

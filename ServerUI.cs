@@ -14,26 +14,56 @@ public class ServerUI
     private List<Label> _readyTicketsLabelList = new List<Label>();
     private Label _labelTitle;
     private Label _labelTitleReadyTickets;
-    private Label _label;
+    private List<Label> _label = new List<Label>();
+    private List<int> _timeNextIssuingOrder = new List<int>();
 
-    public ServerUI(Panel panel, Panel panelReadyTickets, Label labelTitle, Label labelTitleReadyTickets)
+    public List<Label> Label
+    {
+        get { return _label; }
+        set
+        {
+            if (value != null)
+            {
+                Label = value;
+            }
+        }
+    }
+
+    public List<int> TimeNextIssuingOrder
+    {
+        get { return _timeNextIssuingOrder; }
+        set
+        {
+            if (value != null)
+            {
+                _timeNextIssuingOrder = value;
+            }
+        }
+    }
+
+    public ServerUI(Panel panel, Panel panelReadyTickets, Label labelTitle, Label labelTitleReadyTickets, int count)
     {
         _panel = panel;
         _panelReadyTickets = panelReadyTickets;
         _labelTitle = labelTitle;
         _labelTitleReadyTickets = labelTitleReadyTickets;
+        //_label = new Label[count].ToList();
+        //_timeNextIssuingOrder = new int[count].ToList();
     }
 
-    public void IssuingOrder(Customer customer)
+    public void IssuingOrder(Customer customer, int i)
     {
-        _label = CreaterLabel(new Size(_panel.Width - 30, 70), new Point(0, 0), customer.ToString(), _panel);
+        if (_label[i] == null)
+        {
+            _label[i] = CreaterLabel(new Size(_panel.Width - 30, 70), new Point(0, (_label.Count - 1) * 70), customer.ToString(), _panel);
+        }
         RemoveTicket(customer);
-        RefreshLocation();
+        RefreshLocation(_readyTicketsLabelList);
     }
 
-    public void RefreshLocation()
+    public void RefreshLocation(List<Label> list)
     {
-        foreach (Label label in _readyTicketsLabelList)
+        foreach (Label label in list)
         {
             label.Location = new Point(label.Location.X, label.Location.Y - label.Height);
         }
@@ -67,13 +97,15 @@ public class ServerUI
         return _readyTicketsList.First();
     }
 
-    public void ClearPanel()
+    public void ClearPanel(int i)
     {
-        if (_label != null)
+        if (_label[i] != null)
         {
-            _panel.Controls.Remove(_label);
-            _label.Dispose();
-            _label = null;
+            _panel.Controls.Remove(_label[i]);
+            _label[i].Dispose();
+            _label[i] = null;
+
+            RefreshLocation(_label);
         }
         else
         {
