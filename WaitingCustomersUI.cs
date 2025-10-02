@@ -33,7 +33,7 @@ namespace Lab1
         public void AddNewCustomer(Customer customer)
         {
             _customersList.Add(customer);
-            Label label = CreaterLabel(new Size(_waitingCustomersPanel.Width - 10, 70),
+            Label label = CreaterLabel(new Size(_waitingCustomersPanel.Width - 30, 70),
             new Point(5, 5 + (_customersList.Count - 1) * 70 + _waitingCustomersPanel.AutoScrollPosition.Y), customer.Name, _waitingCustomersPanel);
             _customersLabels.Add(label);
         }

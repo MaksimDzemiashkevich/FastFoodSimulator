@@ -109,16 +109,17 @@ public class StartWindow
     public void Main()
     {
         Panel = CreaterPanel(new Size(_window.Width - 20, _window.Height - 20), new Point(10, 10), _window);
-        CountCooksTextBox = CreaterTextBox(new Size(400, 50), new Point(0, 0), "Input count cooks", Panel);
-        CountServersTextBox = CreaterTextBox(new Size(400, 50), new Point(0, CountCooksTextBox.Height + CountCooksTextBox.Location.Y + 10),
+        CountCooksTextBox = CreaterTextBox(new Size(400, 50), new Point((_window.Width - 400)/2, (_window.Height - 500) / 2), "Input count cooks", Panel);
+        CountServersTextBox = CreaterTextBox(new Size(400, 50), new Point((_window.Width - 400) / 2, CountCooksTextBox.Height + CountCooksTextBox.Location.Y + 10),
             "Input count servers", Panel);
-        CountOrderTakersTextBox = CreaterTextBox(new Size(400, 50), new Point(0, CountServersTextBox.Location.Y + CountServersTextBox.Height + 10),
+        CountOrderTakersTextBox = CreaterTextBox(new Size(400, 50), new Point((_window.Width - 400) / 2, CountServersTextBox.Location.Y + CountServersTextBox.Height + 10),
             "Input count order taker", Panel);
-        IntervalTimeArriveCustomersTextBox = CreaterTextBox(new Size(400, 50), new Point(0, CountOrderTakersTextBox.Location.Y + 
+        IntervalTimeArriveCustomersTextBox = CreaterTextBox(new Size(400, 50), new Point((_window.Width - 400) / 2, CountOrderTakersTextBox.Location.Y + 
             CountOrderTakersTextBox.Height + 10), "Input interval time arrive customers", Panel);
-        IntervalTimeCookTextBox = CreaterTextBox(new Size(400, 50), new Point(0, IntervalTimeArriveCustomersTextBox.Location.Y +
+        IntervalTimeCookTextBox = CreaterTextBox(new Size(400, 50), new Point((_window.Width - 400) / 2, IntervalTimeArriveCustomersTextBox.Location.Y +
             IntervalTimeArriveCustomersTextBox.Height + 10), "Input interval time cook tickets", Panel);
-        StartButton = CreaterButton(new Size(200, 70), new Point(400 + 50, 50), "Start", Panel);
+        StartButton = CreaterButton(new Size(200, 70), new Point((_window.Width - 200) / 2, 
+            IntervalTimeCookTextBox.Location.Y + IntervalTimeCookTextBox.Height + 50), "Start", Panel);
     }
 
     private Panel CreaterPanel(Size size, Point point, Control control)

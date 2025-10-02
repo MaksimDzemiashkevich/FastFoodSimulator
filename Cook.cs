@@ -8,9 +8,9 @@ namespace Lab1
 {
     public class Cook
     {
-        private Customer _customer;
+        private List<Customer> _customer = new List<Customer>();
 
-        public Customer Customer
+        public List<Customer> Customer
         {
             get { return _customer; }
             set

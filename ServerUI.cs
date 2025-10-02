@@ -41,22 +41,17 @@ public class ServerUI
         }
     }
 
-    public ServerUI(Panel panel, Panel panelReadyTickets, Label labelTitle, Label labelTitleReadyTickets, int count)
+    public ServerUI(Panel panel, Panel panelReadyTickets, Label labelTitle, Label labelTitleReadyTickets)
     {
         _panel = panel;
         _panelReadyTickets = panelReadyTickets;
         _labelTitle = labelTitle;
         _labelTitleReadyTickets = labelTitleReadyTickets;
-        //_label = new Label[count].ToList();
-        //_timeNextIssuingOrder = new int[count].ToList();
     }
 
     public void IssuingOrder(Customer customer, int i)
     {
-        if (_label[i] == null)
-        {
-            _label[i] = CreaterLabel(new Size(_panel.Width - 30, 70), new Point(0, (_label.Count - 1) * 70), customer.ToString(), _panel);
-        }
+        _label[_label.Count - 1] = CreaterLabel(new Size(_panel.Width - 30, 70), new Point(0, (_label.Count - 1) * 70 + _panel.AutoScrollPosition.Y), customer.ToString(), _panel);
         RemoveTicket(customer);
         RefreshLocation(_readyTicketsLabelList);
     }
@@ -66,6 +61,14 @@ public class ServerUI
         foreach (Label label in list)
         {
             label.Location = new Point(label.Location.X, label.Location.Y - label.Height);
+        }
+    }
+
+    public void RefreshLocation(List<Label> list, int dot)
+    {
+        for (int i = dot; i< list.Count; i++)
+        {
+            list[i].Location = new Point(list[i].Location.X, list[i].Location.Y - list[i].Height);
         }
     }
 
@@ -104,8 +107,10 @@ public class ServerUI
             _panel.Controls.Remove(_label[i]);
             _label[i].Dispose();
             _label[i] = null;
+            _label.RemoveAt(i);
+            _timeNextIssuingOrder.RemoveAt(i);
 
-            RefreshLocation(_label);
+            RefreshLocation(_label, i);
         }
         else
         {
@@ -121,5 +126,37 @@ public class ServerUI
         label.Size = size;
         control.Controls.Add(label);
         return label;
+    }
+
+    public bool CheckTime(int i, int _countSeconds)
+    {
+        if (i >= _timeNextIssuingOrder.Count)
+        {
+            return true;
+        }
+        else if (TimeNextIssuingOrder[i] <= _countSeconds)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool CheckTimer(int i, int _countSeconds)
+    {
+        if (i >= _timeNextIssuingOrder.Count)
+        {
+            return false;
+        }
+        else if (TimeNextIssuingOrder[i] <= _countSeconds)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

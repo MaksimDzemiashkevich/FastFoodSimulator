@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace Lab1;
 public class OrderTaker
 {
-    protected Customer _customer;
+    protected List<Customer> _customer = new List<Customer>();
 
-    public Customer Customer
+    public List<Customer> Customer
     {
         get { return _customer; }
         set
@@ -21,7 +21,7 @@ public class OrderTaker
         }
     }
 
-    public OrderTaker(Customer customer)
+    public OrderTaker(List<Customer> customer)
     {
         Customer = customer;
     }

@@ -12,12 +12,13 @@ public class CookUI : Cook
     private Panel _panel;
     private Panel _panelQueue;
     private Label _labelTitle;
-    private Label _labelCook;
+    private List<Label> _labelCook = new List<Label>();
     private Label _labelQueue;
     private List<Label> _labelsTickets = new List<Label>();
     private List<Customer> _listCustomers = new List<Customer>();
- 
-    public Label LabelCook
+    private List<int> _timeNextIssuingOrder = new List<int>();
+
+    public List<Label> LabelCook
     {
         get { return _labelCook; }
         set
@@ -25,6 +26,18 @@ public class CookUI : Cook
             if (value != null)
             {
                 _labelCook = value;
+            }
+        }
+    }
+
+    public List<int> TimeNextIssuingOrder
+    {
+        get { return _timeNextIssuingOrder; }
+        set
+        {
+            if (value != null)
+            {
+                _timeNextIssuingOrder = value;
             }
         }
     }
@@ -39,10 +52,10 @@ public class CookUI : Cook
 
     public void Cooking()
     {
-        Customer = _listCustomers.First();
-        _labelCook = CreaterLabel(new Size(_panel.Size.Width, _panel.Size.Height), new Point(0, 0), Customer.ToString(), _panel);
+        Customer.Add(_listCustomers.First());
+        _labelCook[_labelCook.Count - 1] = CreaterLabel(new Size(_panel.Size.Width - 30, 70), new Point(0, (_labelCook.Count - 1) * 70 + _panel.AutoScrollPosition.Y), Customer.Last().ToString(), _panel);
 
-        int index = _listCustomers.IndexOf(Customer);
+        int index = _listCustomers.IndexOf(_listCustomers.First());
         _listCustomers.RemoveAt(index);
 
         Label label = _labelsTickets[index];
@@ -50,14 +63,14 @@ public class CookUI : Cook
         _labelsTickets.Remove(label);
         label.Dispose();
 
-        RefreshLocation();
+        RefreshLocation(_labelsTickets, index);
     }
 
-    private void RefreshLocation()
+    public void RefreshLocation(List<Label> list, int dot)
     {
-        foreach (Label label in _labelsTickets)
+        for (int i = dot; i < list.Count; i++)
         {
-            label.Location = new Point(label.Location.X, label.Location.Y - label.Height);
+            list[i].Location = new Point(list[i].Location.X, list[i].Location.Y - list[i].Height);
         }
     }
 
@@ -83,16 +96,32 @@ public class CookUI : Cook
         return label;
     }
 
-    public void ClearPanel()
+    public void ClearPanel(int i)
     {
-        _panel.Controls.Remove(_labelCook);
-        _labelCook.Dispose();
-        _labelCook = null;
+        if (_labelCook[i] != null)
+        {
+            _panel.Controls.Remove(_labelCook[i]);
+            _labelCook[i].Dispose();
+            _labelCook[i] = null;
+            _labelCook.RemoveAt(i);
+            _timeNextIssuingOrder.RemoveAt(i);
+            Customer.RemoveAt(i);
+
+            RefreshLocation(_labelCook, i);
+        }
+        else
+        {
+            return;
+        }
     }
 
-    public bool IsExistedLabel()
+    public bool IsExistedLabels()
     {
         if (_labelCook == null)
+        {
+            return false;
+        }
+        else if (_labelCook.Count < 1)
         {
             return false;
         }
@@ -102,8 +131,45 @@ public class CookUI : Cook
         }
     }
 
+    public bool IsExistedLabel(int i)
+    {
+        return (_labelCook.Count > i) ? true : false;
+    }
+
     public bool IsTicketsInOrder()
     {
         return (_labelsTickets.Count > 0) ? true : false;
+    }
+
+    public bool CheckTimer(int i, int _countSeconds)
+    {
+        if (i >= _timeNextIssuingOrder.Count)
+        {
+            return false;
+        }
+        else if (TimeNextIssuingOrder[i] <= _countSeconds)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool CheckTime(int i, int _countSeconds)
+    {
+        if (i >= _timeNextIssuingOrder.Count)
+        {
+            return true;
+        }
+        else if (TimeNextIssuingOrder[i] <= _countSeconds)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

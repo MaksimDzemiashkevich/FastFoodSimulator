@@ -31,8 +31,8 @@ public class PresentationSimulation
     private int _timeForNextCooking = 0;
     private int _timeNextIssuingOrder = 0;
 
-    private int _timeforMakingOrder = 2;
-    private int _timeForIssuingOrder = 4;
+    private int _timeforMakingOrder = 5;
+    private int _timeForIssuingOrder = 6;
     private int _rest = 1;
 
     private Customer customer;
@@ -147,13 +147,13 @@ public class PresentationSimulation
 
     public void Main()
     {
-        OrderTakerUI = new OrderTakerUI(CreaterPanel(new Size(300, 120), new Point(50, 130), _window));
+        OrderTakerUI = new OrderTakerUI(CreaterPanel(new Size(300, 320), new Point(50, 130), _window));
         OrderTakerUI.LabelTitle = CreaterLabelTitle(new Size(300, 80), new Point(50, 50), "Order taker", _window);
 
-        _customerListUI = new CustomerListUI(CreaterPanel(new Size(300, 620), new Point(50, 580), _window));
+        _customerListUI = new CustomerListUI(CreaterPanel(new Size(300, 400), new Point(50, 580), _window));
         _customerListUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(50, 500), "Customers", _window);
 
-        _waitingCustomersUI = new WaitingCustomersUI(CreaterPanel(new Size(300, 620), new Point(800, 580), _window));
+        _waitingCustomersUI = new WaitingCustomersUI(CreaterPanel(new Size(300, 400), new Point(800, 580), _window));
         _waitingCustomersUI.Label = CreaterLabelTitle(new Size(300, 80), new Point(800, 500), "Waiting customers", _window);
 
         _cookUI = new CookUI(CreaterPanel(new Size(300, 120), new Point(400, 130), _window), CreaterPanel(new Size(300, 120), 
@@ -162,7 +162,7 @@ public class PresentationSimulation
 
         _serverUI = new ServerUI(CreaterPanel(new Size(300, 120), new Point(800, 130), _window), CreaterPanel(new Size(300, 120),
             new Point(800, 330), _window), CreaterLabelTitle(new Size(300, 80), new Point(800, 50), "Server", _window),
-            CreaterLabelTitle(new Size(300, 80), new Point(800, 250), "Ready tickets", _window), CountServers);
+            CreaterLabelTitle(new Size(300, 80), new Point(800, 250), "Ready tickets", _window));
 
         _stopButton = CreaterButton(new Size(200, 70), new Point(450, 700), "Stop", _window);
         _stopButton.Click += StopAndContinue;
@@ -184,48 +184,62 @@ public class PresentationSimulation
             _intervalTimeArriveCustomersLocal += _intervalTimeArriveCustomers;
         }
         //make order move to cook queue, customer move from order taker to waiting queue and order taker area clear
-        if (_timeForNextMakingOrder <= _countSeconds && _orderTakerUI.IsExistedLabel())
+        for (int i =0; i< _countOrderTakers; i++)
         {
-            _cookUI.AddCustomerInQueue(_orderTakerUI.Customer);
-            _waitingCustomersUI.AddNewCustomer(_orderTakerUI.Customer);
-            _orderTakerUI.ClearPanel();
+            if (_orderTakerUI.CheckTimer(i, _countSeconds) && _orderTakerUI.IsExistedLabel())
+            {
+                _cookUI.AddCustomerInQueue(_orderTakerUI.Customer.First());
+                _waitingCustomersUI.AddNewCustomer(_orderTakerUI.Customer.First());
+                _orderTakerUI.ClearPanel(i);
+            }
+            //Order taker make new order and first customer leave queue
+            if (_customerListUI.CustomersList.Count > 0 && _orderTakerUI.CheckTime(i, _countSeconds))
+            {
+                _orderTakerUI.MakingOrder(_customerListUI.CustomersList.First());
+                _customerListUI.RemoveCustomer(_customerListUI.CustomersList.First());
+                _orderTakerUI.TimeNextIssuingOrder.Add(_countSeconds + _timeforMakingOrder);
+            }
         }
-        //Order taker make new order and first customer leave queue
-        if (_customerListUI.CustomersList.Count > 0 && _countSeconds >= _timeForNextMakingOrder + _rest)
+
+
+        //Get from cooks panel ready order
+        
+        for (int i = 0; i < _countCooks; i++)
         {
-            _orderTakerUI.MakingOrder(_customerListUI.CustomersList.First());
-            _customerListUI.RemoveCustomer(_customerListUI.CustomersList.First());
-            _timeForNextMakingOrder = _countSeconds + _timeforMakingOrder;
+            if (_cookUI.CheckTimer(i, _countSeconds))
+            {
+                _serverUI.AddReadyTicket(_cookUI.Customer[i]);
+                _cookUI.ClearPanel(i);
+            }
+            //Take ticket from queue and cook
+            if (_cookUI.CheckTime(i, _countSeconds) && _cookUI.IsTicketsInOrder())
+            {
+                _cookUI.LabelCook.Add(null);
+                _cookUI.Cooking();
+                _cookUI.TimeNextIssuingOrder.Add(_countSeconds + _intervalTimeCook);
+            }
         }
-        //
-        if (_timeForNextCooking <= _countSeconds && _cookUI.IsExistedLabel())
+        
+
+        //check time so remove putted orders
+        for (int i = 0; i < _countServers; i++)
         {
-            _serverUI.AddReadyTicket(_cookUI.Customer);
-            _cookUI.ClearPanel();
-        }
-        //Take ticket from queue and cook
-        if (_timeForNextCooking + _rest <= _countSeconds && _cookUI.IsTicketsInOrder())
-        {
-            _cookUI.Cooking();
-            _timeForNextCooking = _countSeconds + _intervalTimeCook;
+            if (_serverUI.CheckTimer(i, _countSeconds))
+            {
+                _serverUI.ClearPanel(i);
+            }
         }
         //Server waiting customers
         if (_serverUI.IsAnyReadyTicket() && _waitingCustomersUI.IsAnyWaitingCustomer())
         {
             for (int i = 0; i < _countServers; i++)
             {
-                if (_serverUI.TimeNextIssuingOrder[i] < _countSeconds && _serverUI.IsAnyReadyTicket())
+                if (_serverUI.CheckTime(i, _countSeconds) && _serverUI.IsAnyReadyTicket())
                 {
-                    _serverUI.ClearPanel(i);
+                    _serverUI.Label.Add(null);
                     ServerWaitingCustomer(i);
-                    _serverUI.TimeNextIssuingOrder[i] = _countSeconds + _timeForIssuingOrder;
+                    _serverUI.TimeNextIssuingOrder.Add(_countSeconds + _timeForIssuingOrder);
                 }
-            }
-            if (_timeNextIssuingOrder < _countSeconds && _serverUI.IsAnyReadyTicket() && _waitingCustomersUI.IsAnyWaitingCustomer())
-            {
-
-
-
             }
         }
     }

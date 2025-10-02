@@ -8,6 +8,5 @@ public partial class Form1 : Form
 
         StartWindow startWindow = new StartWindow(this);
         startWindow.Main();
-
     }
 }
